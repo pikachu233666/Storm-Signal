@@ -160,13 +160,10 @@ Our next goal is to improve the prediction accuracy of our three AI models and a
 **Storm Signal** was developed by a team of four:
 
 - **Yuxin Liu** — Team Lead & Design  
-  [Website](https://yuxinliu.top) 
 
 - **Yubo Sun** — Backend  
-  [Website](https://www.yubosec.com) 
 
 - **Lorisa Li** — Frontend  
 
 - **Zora Cheng** — Design  
 
-**Project Website:** [stormsignal.us](https://stormsignal.us)
