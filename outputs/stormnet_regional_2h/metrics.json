@@ -1,0 +1,23 @@
+{
+  "model": "regional_tec_change_cnn_gru",
+  "horizon_hours": 2,
+  "target": "absolute change in IonoBench normalized TEC, per grid cell",
+  "threshold_quantile_train": 0.9,
+  "threshold": 0.024750106036663055,
+  "threshold_estimation": "256 random TEC grid cells per training sample",
+  "valid": {
+    "bce": 0.11118641322180951,
+    "brier": 0.033389621618661186,
+    "probability_mae": 0.06648646667360796,
+    "positive_fraction": 0.06756741738308954,
+    "samples": 8991
+  },
+  "test": {
+    "bce": 0.3441308724444087,
+    "brier": 0.10763396504628159,
+    "probability_mae": 0.203471857867518,
+    "positive_fraction": 0.23020903906955736,
+    "samples": 1640
+  },
+  "caveat": "Probabilities are uncalibrated. Not geomagnetic storm or power outage probabilities."
+}

@@ -1,0 +1,47 @@
+{
+  "model": "fusion",
+  "version": "v2_residual",
+  "device": "cuda",
+  "best_validation_loss": 0.23567480094479767,
+  "delta_std": 5.200908660888672,
+  "valid": {
+    "mae": 2.7788779735565186,
+    "rmse": 4.022816181182861,
+    "samples": 8991,
+    "persistence": {
+      "mae": 3.2038705348968506,
+      "rmse": 4.836878776550293,
+      "samples": 8991
+    },
+    "storm_only": {
+      "mae": 7.140100002288818,
+      "rmse": 9.799168586730957,
+      "samples": 190,
+      "persistence": {
+        "mae": 8.347368240356445,
+        "rmse": 12.009645462036133,
+        "samples": 190
+      }
+    }
+  },
+  "test": {
+    "mae": 3.5782721042633057,
+    "rmse": 5.948296546936035,
+    "samples": 1640,
+    "persistence": {
+      "mae": 4.165244102478027,
+      "rmse": 6.893572807312012,
+      "samples": 1640
+    },
+    "storm_only": {
+      "mae": 10.051204681396484,
+      "rmse": 15.15618896484375,
+      "samples": 128,
+      "persistence": {
+        "mae": 11.2421875,
+        "rmse": 16.335113525390625,
+        "samples": 128
+      }
+    }
+  }
+}
