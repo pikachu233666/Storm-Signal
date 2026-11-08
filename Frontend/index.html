@@ -1,0 +1,333 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#03060d" />
+    <meta name="description" content="Storm Signal turns space weather data into a visible story." />
+    <title>Storm Signal | Space Weather Forecasting</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preload" as="image" href="assets/2k_earth_daymap.jpg" fetchpriority="high" crossorigin="anonymous" />
+    <link rel="preload" as="image" href="assets/2k_earth_nightmap.jpg" crossorigin="anonymous" />
+    <link rel="preload" as="image" href="assets/2k_earth_clouds.jpg" crossorigin="anonymous" />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" /></noscript>
+    <link rel="stylesheet" href="styles.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+      }
+    </script>
+    <script src="config.js"></script>
+    <script type="module" src="script.js"></script>
+  </head>
+  <body>
+    <main class="hero" id="home">
+      <div class="nebula" aria-hidden="true"></div>
+      <div class="stars stars--distant" aria-hidden="true"></div>
+      <div class="stars stars--near" aria-hidden="true"></div>
+      <div class="stars stars--meteors" aria-hidden="true"></div>
+      <div class="stars stars--meteors-extra" aria-hidden="true"></div>
+      <div class="stars stars--meteors-shower" aria-hidden="true"></div>
+      <div class="stars stars--meteors-trail" aria-hidden="true"></div>
+
+      
+      <header class="site-header">
+        <!-- Main Navigation -->
+        <nav class="navigation text-navigation" aria-label="Main navigation">
+          <a class="is-active" href="#home" data-view="home" aria-current="page">
+            Home
+          </a>
+          <a href="#forecast" data-view="forecast">
+            Forecast
+          </a>
+          <a href="#alert" data-view="alert">
+            Alert
+          </a>
+          <a href="#about" data-view="about">
+            About
+          </a>
+        </nav>
+
+        <!-- Star Navigation -->
+        <nav class="navigation star-navigation"
+            aria-label="Star navigation"
+            aria-hidden="true"
+            inert>
+
+          <a class="is-active" href="#home" data-view="home"
+            aria-label="Home" aria-current="page">
+            <span class="star-mark" aria-hidden="true"></span>
+          </a>
+
+          <a href="#forecast" data-view="forecast" aria-label="Forecast">
+            <span class="star-mark" aria-hidden="true"></span>
+          </a>
+
+          <a href="#alert" data-view="alert" aria-label="Alert">
+            <span class="star-mark" aria-hidden="true"></span>
+          </a>
+
+          <a href="#about" data-view="about" aria-label="About">
+            <span class="star-mark" aria-hidden="true"></span>
+          </a>
+
+        </nav>
+      </header>
+
+
+      <section class="intro" aria-labelledby="page-title">
+        <p class="eyebrow">Space weather forecasting</p>
+        <h1 id="page-title">Storm Signal</h1>
+        <p class="tagline">Turning Space Weather Data into a Visible Story.</p>
+      </section>
+
+      <div class="earth-stage" role="button" tabindex="0" aria-pressed="false" aria-label="Tap Earth to open immersive view">
+        <div class="earth-glow" aria-hidden="true"></div>
+        <div class="earth-fallback" aria-hidden="true"></div>
+        <canvas class="earth-canvas" aria-hidden="true"></canvas>
+      </div>
+      <svg class="country-connector" aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id="country-connector-gradient" x1="0" x2="1" y1="0" y2="0">
+            <stop offset="0" stop-color="#65caff" stop-opacity="0.25" />
+            <stop offset="1" stop-color="#a4eaff" stop-opacity="0.9" />
+          </linearGradient>
+        </defs>
+        <path class="country-connector-line" />
+        <circle class="country-connector-halo" r="8" />
+        <circle class="country-connector-node" r="2.5" />
+      </svg>
+
+      <aside class="country-panel" aria-label="Selected region popup" aria-hidden="true" inert>
+        <button class="country-panel-close" type="button" aria-label="Close selected region popup">&times;</button>
+        <p class="selected-region-name" data-selected-region-name></p>
+        <p class="selected-region-summary" data-selected-region-summary aria-live="polite">TEC Disturbance Model Score unavailable</p>
+        <section class="region-detail" aria-hidden="true" inert>
+          <p class="panel-kicker">SELECTED REGION</p>
+          <h2 data-detail-country>--</h2>
+          <p class="region-meta"><span data-detail-continent>--</span><span data-detail-code>--</span></p>
+          <p class="region-population">Population estimate <span data-detail-population>--</span></p>
+          <div class="api-replay-summary">
+            <p class="api-replay-mode" data-api-mode>Connecting to Live Forecast</p>
+            <p class="forecast-source-note" data-observation-time>Observation time: --</p>
+          </div>
+          <div class="forecast-controls">
+            <label>Forecast mode
+              <select data-forecast-mode aria-label="Forecast mode">
+                <option value="live">Live Forecast</option>
+                <option value="replay">Historical Replay</option>
+              </select>
+            </label>
+            <label>Global model
+              <select data-global-model aria-label="Global forecast model">
+                <option value="baseline">Baseline</option>
+                <option value="fusion">Fusion</option>
+              </select>
+            </label>
+            <label class="sample-control">Replay sample <output data-sample-index>0</output>
+              <input data-replay-index type="range" min="0" max="1639" value="0" step="1" aria-label="Historical replay sample" />
+            </label>
+            <button type="button" class="replay-play" data-replay-play aria-pressed="false">Play replay</button>
+          </div>
+          <div class="forecast-tabs" role="tablist" aria-label="Forecast scope">
+            <button class="is-active" type="button" role="tab" aria-selected="true" data-forecast-view="global">Global</button>
+            <button type="button" role="tab" aria-selected="false" data-forecast-view="regional">Regional</button>
+          </div>
+          <section class="forecast-panel is-active" role="tabpanel" data-forecast-panel="global">
+            <div class="global-score"><span>Predicted SYM-H</span><strong data-global-symh>--</strong></div>
+            <div class="global-metrics">
+              <div><span>Current</span><strong data-global-current>--</strong></div>
+              <div><span>Actual</span><strong data-global-actual>--</strong></div>
+              <div><span>Target UTC</span><strong data-global-target>--</strong></div>
+              <div><span>Horizon</span><strong data-global-horizon>--</strong></div>
+            </div>
+            <p class="region-forecast-note" data-global-note>Forecasts use historical observations.</p>
+          </section>
+          <section class="forecast-panel" role="tabpanel" data-forecast-panel="regional" hidden>
+            <div class="region-forecast-heading"><span>TEC Disturbance Model Score</span><span>72 x 72</span></div>
+            <label class="tec-overlay-control"><input type="checkbox" data-tec-overlay disabled /> Earth overlay</label>
+            <p class="grid-score-note" data-tec-mapping-status>Geographic mapping unverified.</p>
+            <div class="regional-grid-wrap">
+              <canvas class="regional-score-grid" width="288" height="288" aria-label="Unmapped 72 by 72 regional model score grid"></canvas>
+            </div>
+            <div class="grid-score-legend"><span data-grid-score-range>--</span><span>raw score range</span></div>
+            <p class="grid-score-note" data-grid-score-note>Unmapped index-space model scores; not probabilities or geographic cells.</p>
+            <p class="region-forecast-note" data-forecast-note>TEC forecast / 2-hour target sample.</p>
+          </section>
+          <div class="region-score-note">
+            <span>Country mean TEC Disturbance Model Score</span><strong data-model-score>--</strong>
+            <span>Country maximum TEC Disturbance Model Score</span><strong data-model-score-max>--</strong>
+            <small data-model-score-note>Grid location mapping is unverified.</small>
+          </div>
+          <p class="region-boundary-note">1:50m detail boundaries</p>
+        </section>
+      </aside>
+
+      <button class="start-button" type="button">
+        <span>Click Start</span>
+        <span class="start-line" aria-hidden="true"></span>
+      </button>
+      <p class="motion-status" aria-live="polite"></p>
+      <section class="alert-page" id="alert-page" hidden>
+        <div class="alert-page-header">
+          <div>
+            <p class="alert-eyebrow">STORM SIGNAL / REGIONAL MONITORING</p>
+            <h1>Regional Alerts</h1>
+            <p class="alert-description">
+              Regional alerts based on TEC Disturbance Model Scores.
+              Monitor high-scoring regions and track changes over time.
+            </p>
+          </div>
+          <button type="button" class="alert-back" data-alert-back>
+            Back to Earth
+          </button>
+        </div>
+
+        <div class="alert-overview">
+          <div class="alert-stat">
+            <span>Countries on Alert</span>
+            <strong data-alert-count>--</strong>
+          </div>
+          <div class="alert-stat">
+            <span>Critical</span>
+            <strong data-alert-critical>--</strong>
+          </div>
+          <div class="alert-stat">
+            <span>Highest Model Score</span>
+            <strong data-alert-highest>--</strong>
+          </div>
+        </div>
+
+        <div class="alert-list-heading">
+          <h2>Active Regional Alerts</h2>
+          <span>Sorted by maximum score</span>
+        </div>
+
+        <div class="alert-grid" data-alert-grid>
+          <p>Waiting for regional forecast data...</p>
+        </div>
+
+        <p class="alert-disclaimer">
+        </p>
+      </section>
+      <section class="about-page" id="about-page" hidden>
+        <div class="about-container">
+
+          <div class="about-heading">
+            <span class="about-eyebrow">STORM SIGNAL / ABOUT</span>
+            <h1>Understanding<br>Space Weather.</h1>
+            <p>
+              Storm Signal transforms complex space weather data
+              into accessible forecasts, interactive visualizations,
+              and regional insights.
+            </p>
+            <a href="https://stormsignal.us" class="about-domain">
+              stormsignal.us ↗
+            </a>
+          </div>
+
+          <div class="about-section">
+            <span class="about-section-label">01 / THE PROJECT</span>
+            <h2>Making space weather visible.</h2>
+            <p>
+              Space weather can affect the technological systems
+              we depend on. Storm Signal brings together solar wind
+              observations, geomagnetic forecasting, and ionospheric
+              disturbance modeling in a unified experience.
+            </p>
+          </div>
+
+          <div class="about-section">
+            <span class="about-section-label">02 / WHAT WE DO</span>
+
+            <div class="about-features">
+              <article class="about-feature">
+                <span>01</span>
+                <h3>Space Weather Forecasting</h3>
+                <p>Explore solar wind conditions and geomagnetic trends.</p>
+              </article>
+
+              <article class="about-feature">
+                <span>02</span>
+                <h3>Interactive Earth</h3>
+                <p>Visualize regional TEC disturbance model scores on a 3D globe.</p>
+              </article>
+
+              <article class="about-feature">
+                <span>03</span>
+                <h3>Regional Alerts</h3>
+                <p>Identify high-scoring regions through an intuitive alert dashboard.</p>
+              </article>
+            </div>
+          </div>
+
+          <div class="about-section">
+            <span class="about-section-label">03 / THE PEOPLE</span>
+            <h2>Meet the Team.</h2>
+
+            
+          <div class="about-team">
+            <article class="about-member">
+              <span class="about-avatar">YL</span>
+              <div>
+                <h3>Yuxin Liu</h3>
+                <p>Team Lead &amp; Design</p>
+                <div class="about-member-links">
+                  <a href="https://yuxinliu.top" target="_blank" rel="noopener noreferrer">Website ↗</a>
+                  <a href="https://www.linkedin.com/in/yuxin-liu-30394a405/" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
+                </div>
+              </div>
+            </article>
+
+            <article class="about-member">
+              <span class="about-avatar">YS</span>
+              <div>
+                <h3>Yubo Sun</h3>
+                <p>Backend</p>
+                <div class="about-member-links">
+                  <a href="https://www.yubosec.com" target="_blank" rel="noopener noreferrer">Website ↗</a>
+                  <a href="https://www.linkedin.com/in/yubosun1225/" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
+                </div>
+              </div>
+            </article>
+
+            <article class="about-member">
+              <span class="about-avatar">LL</span>
+              <div>
+                <h3>Lorisa Li</h3>
+                <p>Frontend</p>
+                <div class="about-member-links">
+                  <a href="https://www.linkedin.com/in/siyili16888/" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
+                </div>
+              </div>
+            </article>
+
+            <article class="about-member">
+              <span class="about-avatar">ZC</span>
+              <div>
+                <h3>Zora Cheng</h3>
+                <p>Design</p>
+                <div class="about-member-links">
+                  <a href="https://www.linkedin.com/in/zora-cheng-08b71b446/" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
+                </div>
+              </div>
+            </article>
+          </div>
+
+
+          <footer class="about-footer">
+            <span>© 2026 Storm Signal</span>
+            <a href="https://stormsignal.us">stormsignal.us ↗</a>
+          </footer>
+
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
