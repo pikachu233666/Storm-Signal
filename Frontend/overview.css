@@ -1,0 +1,31 @@
+/* Space Weather Overview — loaded after the existing styles.css */
+.space-overview[hidden] { display: none !important; }
+.space-overview {
+  position: fixed; z-index: 15; top: 104px; right: clamp(16px,3vw,52px);
+  width: min(440px, calc(100vw - 32px)); max-height: calc(100dvh - 122px);
+  overflow-y: auto; padding: 22px; box-sizing: border-box;
+  color: #eaf4ff; background: rgba(5,17,32,.92);
+  border: 1px solid rgba(120,168,202,.24); border-radius: 18px;
+  box-shadow: 0 20px 65px rgba(0,0,0,.38); backdrop-filter: blur(16px);
+}
+.swo-header {display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:20px}
+.swo-eyebrow {color:#79bce8;font:10px 'DM Sans',sans-serif;letter-spacing:.16em}
+.swo-header h2 {font-size:clamp(22px,2.5vw,30px);font-weight:400;margin:8px 0}
+.swo-header p,.swo-chart-header p {color:#92aabe;font-size:12px;line-height:1.5;margin:0}
+.swo-status {font-size:10px;color:#9ed8ff;border:1px solid #31536b;border-radius:24px;padding:7px 9px;max-width:135px;text-align:center}
+.swo-stats {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.swo-stat,.swo-chart-panel {background:rgba(18,42,64,.85);border:1px solid rgba(120,168,202,.16);border-radius:12px;padding:12px}
+.swo-stat>span:first-child,.swo-note {color:#91aabd;font-size:10px}
+.swo-value {display:flex;align-items:baseline;gap:4px;margin:12px 0}
+.swo-value strong {font-size:clamp(20px,2.3vw,29px);font-weight:500;font-variant-numeric:tabular-nums}
+.swo-value small {font-size:10px;color:#91aabd}
+.swo-chart-header {display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.swo-chart-header h3 {font-size:15px;font-weight:500;margin:0 0 5px}
+.swo-legend {display:flex;gap:9px;flex-wrap:wrap;font-size:10px;color:#a5bacc}
+.swo-legend span {display:flex;align-items:center;gap:5px}
+.swo-dot {display:inline-block;width:7px;height:7px;border-radius:50%}
+.swo-dot.observed {background:#7ac9ff}.swo-dot.predicted {background:#ffad66}
+#swo-chart {display:block;width:100%;height:auto;margin:12px 0}
+.swo-chart-footer {display:flex;justify-content:space-between;gap:10px;border-top:1px solid #294257;padding-top:12px;color:#91aabd;font-size:10px;flex-wrap:wrap}
+.swo-disclaimer {color:#7f9ab1;font-size:10px;line-height:1.5;margin:10px 0 0}
+@media(max-width:700px){.space-overview{top:auto;bottom:12px;left:12px;right:12px;width:auto;max-height:46dvh;padding:14px}.swo-header h2{font-size:22px}.swo-stats{gap:5px}.swo-stat,.swo-chart-panel{padding:9px}.swo-value strong{font-size:22px}}

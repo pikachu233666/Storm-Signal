@@ -1632,3 +1632,157 @@ h1::after {
   color: #ffffff;
   text-decoration: underline;
 }
+
+
+/* SPACE WEATHER OVERVIEW */
+
+.space-overview {
+  width: 100%;
+  margin-bottom: 32px;
+  color: #eaf4ff;
+}
+
+.swo-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+
+.swo-eyebrow {
+  color: #79bce8;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+}
+
+.swo-header h2 {
+  font-size: clamp(24px, 3vw, 38px);
+  font-weight: 400;
+  margin: 10px 0;
+}
+
+.swo-header p,
+.swo-chart-header p {
+  color: #92aabe;
+  font-size: 13px;
+}
+
+.swo-status {
+  padding: 8px 13px;
+  border: 1px solid #31536b;
+  border-radius: 30px;
+  color: #9ed8ff;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.swo-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.swo-stat,
+.swo-chart-panel {
+  padding: 24px;
+  background: rgba(14, 33, 52, 0.88);
+  border: 1px solid rgba(120, 168, 202, 0.18);
+  border-radius: 12px;
+}
+
+.swo-stat > span:first-child,
+.swo-note {
+  color: #91aabd;
+  font-size: 12px;
+}
+
+.swo-value {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin: 16px 0;
+}
+
+.swo-value strong {
+  font-size: clamp(28px, 3vw, 40px);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.swo-value small {
+  color: #91aabd;
+  font-size: 13px;
+}
+
+.swo-chart-header,
+.swo-chart-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.swo-chart-header h3 {
+  font-size: 17px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.swo-legend {
+  display: flex;
+  gap: 16px;
+  font-size: 11px;
+  color: #a5bacc;
+}
+
+.swo-legend span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.swo-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.swo-dot.observed { background: #7ac9ff; }
+.swo-dot.predicted { background: #ffad66; }
+
+.swo-chart-container {
+  margin: 24px 0 12px;
+}
+
+#swo-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.swo-chart-footer {
+  color: #91aabd;
+  font-size: 11px;
+  border-top: 1px solid #294257;
+  padding-top: 16px;
+}
+
+@media (max-width: 700px) {
+  .swo-header,
+  .swo-chart-header {
+    flex-direction: column;
+  }
+
+  .swo-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .swo-stat,
+  .swo-chart-panel {
+    padding: 18px;
+  }
+}
