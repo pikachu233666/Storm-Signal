@@ -135,3 +135,77 @@ def metrics():
         'global_fusion': read_json(FUSION / 'metrics.json'),
         'regional': read_json(REGION / 'metrics.json'),
     }
+
+# --- Stateless historical replay API (v1.1) ---
+# The client owns the cursor; GET requests never mutate server state.
+
+def replay_sources():
+    maps, timestamps = read_maps()
+    if not len(maps):
+        raise HTTPException(503, 'No regional replay samples available')
+    return maps, timestamps
+
+
+def replay_frame(index: int, model: str = 'baseline'):
+    maps, timestamps = replay_sources()
+    if not 0 <= index < len(maps):
+        raise HTTPException(404, f'Index out of range (0..{len(maps)-1})')
+    regional = regional_forecast(index=index)
+    # The global and regional sample indices are not guaranteed to align.
+    # Match by timestamp instead, and explicitly return null if no match exists.
+    df = read_predictions(model)
+    anchor = pd.Timestamp(timestamps[index])
+    anchor = anchor.tz_localize('UTC') if anchor.tzinfo is None else anchor.tz_convert('UTC')
+    matching = df.index[pd.to_datetime(df['timestamp_utc'], utc=True) == anchor]
+    global_data = global_forecast(model=model, index=int(matching[0])) if len(matching) else None
+    return {
+        'data_mode': 'historical_replay',
+        'playback_status': 'paused',
+        'sample_index': index,
+        'sample_count': len(maps),
+        'forecast_time_utc': regional['forecast_time_utc'],
+        'global_forecast': global_data,
+        'regional_forecast': regional,
+        'global_available_for_timestamp': global_data is not None,
+        'geographic_mapping_status': 'unverified',
+        'probability_status': 'uncalibrated',
+    }
+
+
+@app.get('/api/v1/replay/current')
+def replay_current(index: int = Query(0, ge=0), model: str = Query('baseline', pattern='^(baseline|fusion)$')):
+    return replay_frame(index, model)
+
+
+@app.get('/api/v1/replay/next')
+def replay_next(index: int = Query(0, ge=0), loop: bool = Query(True), model: str = Query('baseline', pattern='^(baseline|fusion)$')):
+    maps, _ = replay_sources()
+    if index >= len(maps):
+        raise HTTPException(404, f'Index out of range (0..{len(maps)-1})')
+    next_index = index + 1
+    wrapped = next_index >= len(maps)
+    if wrapped and loop:
+        next_index = 0
+    if wrapped and not loop:
+        next_index = index
+    frame = replay_frame(next_index, model)
+    frame['previous_index'] = index
+    frame['wrapped'] = wrapped and loop
+    frame['end_of_replay'] = wrapped and not loop
+    return frame
+
+
+@app.get('/api/v1/replay/timeline')
+def replay_timeline(offset: int = Query(0, ge=0), limit: int = Query(100, ge=1, le=500)):
+    _, timestamps = replay_sources()
+    count = len(timestamps)
+    items = [{'index': i, 'forecast_time_utc': iso_time(timestamps[i])} for i in range(offset, min(offset + limit, count))]
+    return {
+        'data_mode': 'historical_replay',
+        'sample_count': count,
+        'offset': offset,
+        'limit': limit,
+        'has_more': offset + limit < count,
+        'next_offset': offset + limit if offset + limit < count else None,
+        'items': items,
+    }
