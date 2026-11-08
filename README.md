@@ -154,3 +154,19 @@ Most importantly, working as a team helped us improve our communication, teamwor
 
 ## What's next for Storm Signal
 Our next goal is to improve the prediction accuracy of our three AI models and add more specific solar storm warnings for cities and locations based on their latitude and longitude. We also hope to include real-time space weather data, more detailed regional predictions, and clearer warning notifications to help people better understand potential risks in their area.
+
+## Authors
+
+**Storm Signal** was developed by a team of four:
+
+- **Yuxin Liu** — Team Lead & Design  
+  [Website](https://yuxinliu.top) 
+
+- **Yubo Sun** — Backend  
+  [Website](https://www.yubosec.com) 
+
+- **Lorisa Li** — Frontend  
+
+- **Zora Cheng** — Design  
+
+**Project Website:** [stormsignal.us](https://stormsignal.us)
