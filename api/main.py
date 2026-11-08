@@ -209,3 +209,60 @@ def replay_timeline(offset: int = Query(0, ge=0), limit: int = Query(100, ge=1, 
         'next_offset': offset + limit if offset + limit < count else None,
         'items': items,
     }
+
+# --- Live Forecast dashboard (historical-observation-driven) ---
+# The word "live" describes automatic website updates, not current observations.
+# These endpoints return precomputed historical model predictions, not new inference.
+from datetime import datetime, timezone
+
+LIVE_INTERVAL_SECONDS = max(1, int(os.getenv('LIVE_INTERVAL_SECONDS', '5')))
+
+
+def live_index() -> int:
+    _, timestamps = replay_sources()
+    return int(datetime.now(timezone.utc).timestamp() // LIVE_INTERVAL_SECONDS) % len(timestamps)
+
+
+def live_frame(index: int, model: str):
+    frame = replay_frame(index=index, model=model)
+    frame['mode'] = 'live_forecast'
+    frame['observation_type'] = 'historical'
+    frame['live_observations_available'] = False
+    frame['inference_type'] = 'precomputed_model_predictions'
+    frame['generated_at_utc'] = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
+    frame['update_interval_seconds'] = LIVE_INTERVAL_SECONDS
+    frame['playback_status'] = 'client_controlled'
+    return frame
+
+
+@app.get('/api/v1/live/status')
+def live_status():
+    _, timestamps = replay_sources()
+    return {
+        'mode': 'live_forecast',
+        'ready': True,
+        'observation_type': 'historical',
+        'live_observations_available': False,
+        'inference_type': 'precomputed_model_predictions',
+        'available_frames': len(timestamps),
+        'update_interval_seconds': LIVE_INTERVAL_SECONDS,
+        'data_sources': ['NASA OMNI', 'IonoBench'],
+        'geographic_mapping_status': 'unverified',
+    }
+
+
+@app.get('/api/v1/live/latest')
+def live_latest(model: str = Query('baseline', pattern='^(baseline|fusion)$')):
+    return live_frame(live_index(), model)
+
+
+@app.get('/api/v1/live/forecast')
+def live_forecast(index: int = Query(0, ge=0), model: str = Query('baseline', pattern='^(baseline|fusion)$')):
+    return live_frame(index, model)
+
+
+@app.get('/api/v1/live/history')
+def live_history(offset: int = Query(0, ge=0), limit: int = Query(100, ge=1, le=500)):
+    result = replay_timeline(offset=offset, limit=limit)
+    result['mode'] = 'live_forecast'
+    return result
