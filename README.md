@@ -1,3 +1,4 @@
+![Storm-Signal](./thumbnail.jpg)
 ## Inspiration
 Our inspiration came from exploring a large amount of NASA space weather data. When we learned that geomagnetic storms could affect power grids and communication systems, we realized that these events might also affect people's daily lives.
 
