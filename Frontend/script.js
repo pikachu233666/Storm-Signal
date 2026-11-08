@@ -1,10 +1,10 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-
 const stage = document.querySelector(".earth-stage");
 const canvas = document.querySelector(".earth-canvas");
 const hero = document.querySelector(".hero");
 const intro = document.querySelector(".intro");
+const siteHeader = document.querySelector(".site-header");
 const textNavigation = document.querySelector(".text-navigation");
 const starNavigation = document.querySelector(".star-navigation");
 const startButton = document.querySelector(".start-button");
@@ -22,7 +22,7 @@ const detailBoundaryNote = document.querySelector(".region-boundary-note");
 const apiMode = document.querySelector("[data-api-mode]");
 const forecastModeSelect = document.querySelector("[data-forecast-mode]");
 const observationTime = document.querySelector("[data-observation-time]");
-const API_BASE = String(window.STORM_SIGNAL_API_URL || "").replace(/\/$/, "");
+const API_BASE = String(window.STORM_SIGNAL_API_URL || "https://storm-signal.onrender.com").replace(/\/$/, "");
 const globalSymh = document.querySelector("[data-global-symh]");
 const globalCurrent = document.querySelector("[data-global-current]");
 const globalActual = document.querySelector("[data-global-actual]");
@@ -50,6 +50,47 @@ const countryConnectorLine = document.querySelector(".country-connector-line");
 const countryConnectorHalo = document.querySelector(".country-connector-halo");
 const countryConnectorNode = document.querySelector(".country-connector-node");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+const rollingValueAnimations = new WeakMap();
+
+function setRollingValue(element, value) {
+  const nextValue = String(value);
+  const previousValue = element.querySelector(".rolling-value-current")?.textContent ?? element.textContent;
+  if (previousValue === nextValue) return;
+
+  const previousAnimations = rollingValueAnimations.get(element);
+  if (previousAnimations) previousAnimations.forEach(animation => animation.cancel());
+  rollingValueAnimations.delete(element);
+
+  if (previousValue === "--" || nextValue === "--" || reducedMotion.matches ||
+      !element.getClientRects().length || typeof element.animate !== "function") {
+    element.textContent = nextValue;
+    return;
+  }
+
+  const viewport = document.createElement("span");
+  const previous = document.createElement("span");
+  const current = document.createElement("span");
+  viewport.className = "rolling-value";
+  previous.setAttribute("aria-hidden", "true");
+  previous.textContent = previousValue;
+  current.className = "rolling-value-current";
+  current.textContent = nextValue;
+  viewport.append(previous, current);
+  element.replaceChildren(viewport);
+
+  const options = {duration: 420, easing: "ease-out", fill: "forwards"};
+  const animations = [
+    previous.animate([{transform: "translateY(0)"}, {transform: "translateY(-100%)"}], options),
+    current.animate([{transform: "translateY(100%)"}, {transform: "translateY(0)"}], options)
+  ];
+  rollingValueAnimations.set(element, animations);
+  Promise.all(animations.map(animation => animation.finished)).then(() => {
+    if (rollingValueAnimations.get(element) !== animations) return;
+    rollingValueAnimations.delete(element);
+    element.textContent = nextValue;
+  }).catch(() => {});
+}
+
 let apiSnapshotPromise = null;
 let apiSnapshotKey = "";
 let apiRequestId = 0;
@@ -104,6 +145,31 @@ function setActiveNavigationView(activeView) {
     if (isCurrent) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
   }
+}
+
+function updateNavigationMode() {
+  const pageOpen = hero.classList.contains("has-open-page");
+  const showStars = pageOpen
+    ? siteHeader.classList.contains("is-scroll-compact")
+    : hero.classList.contains("is-exploring");
+  const previousNavigation = showStars ? textNavigation : starNavigation;
+  const nextNavigation = showStars ? starNavigation : textNavigation;
+  const focusedView = previousNavigation.contains(document.activeElement)
+    ? document.activeElement.dataset.view
+    : null;
+  textNavigation.inert = showStars;
+  textNavigation.setAttribute("aria-hidden", String(showStars));
+  starNavigation.inert = !showStars;
+  starNavigation.setAttribute("aria-hidden", String(!showStars));
+  if (focusedView) nextNavigation.querySelector(`[data-view="${focusedView}"]`)?.focus({preventScroll: true});
+}
+
+function syncNavigationVisibility() {
+  const aboutOpen = !document.querySelector("#about-page").hidden;
+  const pageOpen = !document.querySelector("#alert-page").hidden || aboutOpen;
+  hero.classList.toggle("has-open-page", pageOpen);
+  siteHeader.classList.remove("is-scroll-compact");
+  updateNavigationMode();
 }
 
 function setAlertNavigationEnabled(enabled) {
@@ -215,10 +281,7 @@ function setEarthView(isExploring) {
   startButton.inert = isExploring;
   countryPanel.inert = !isExploring || !countryPanel.classList.contains("is-open");
   countryPanel.setAttribute("aria-hidden", String(countryPanel.inert));
-  textNavigation.inert = isExploring;
-  textNavigation.setAttribute("aria-hidden", String(isExploring));
-  starNavigation.inert = !isExploring;
-  starNavigation.setAttribute("aria-hidden", String(!isExploring));
+  syncNavigationVisibility();
   status.textContent = isExploring ? "Immersive Earth view opened." : "Returned to the forecast page.";
 
   setAlertNavigationEnabled(false);
@@ -773,9 +836,9 @@ function loadApiSnapshot() {
         const number = Number(value);
         return Number.isFinite(number) ? `${number > 0 ? "+" : ""}${number.toFixed(2)} nT` : "--";
       };
-      globalSymh.textContent = formatSymH(globalForecast.predicted_sym_h_nT);
-      globalCurrent.textContent = formatSymH(globalForecast.current_sym_h_nT);
-      globalActual.textContent = formatSymH(globalForecast.actual_future_sym_h_nT);
+      setRollingValue(globalSymh, formatSymH(globalForecast.predicted_sym_h_nT));
+      setRollingValue(globalCurrent, formatSymH(globalForecast.current_sym_h_nT));
+      setRollingValue(globalActual, formatSymH(globalForecast.actual_future_sym_h_nT));
       globalTarget.textContent = globalForecast.target_time_utc || "--";
       globalHorizon.textContent = Number.isFinite(Number(globalForecast.horizon_minutes))
         ? `${globalForecast.horizon_minutes} min` : "--";
@@ -809,8 +872,8 @@ function loadApiSnapshot() {
       tecOverlay.visible = false;
       tecOverlayControl.disabled = true;
       tecMappingStatus.textContent = "Regional data unavailable.";
-      selectedModelScore.textContent = "--";
-      selectedModelScoreMax.textContent = "--";
+      setRollingValue(selectedModelScore, "--");
+      setRollingValue(selectedModelScoreMax, "--");
       selectedRegionSummary.textContent = "TEC Disturbance Model Score unavailable";
       modelScoreNote.textContent = "Forecast data could not be loaded.";
       console.warn("Forecast API could not be loaded.", error);
@@ -1045,13 +1108,13 @@ function getCountryTecSummary(feature) {
 function updateCountryTecSummary() {
   const summary = getCountryTecSummary(selectedCountryFeature);
 
-  selectedModelScore.textContent = summary
+  setRollingValue(selectedModelScore, summary
     ? summary.mean.toFixed(3)
-    : "--";
+    : "--");
 
-  selectedModelScoreMax.textContent = summary
+  setRollingValue(selectedModelScoreMax, summary
     ? summary.maximum.toFixed(3)
-    : "--";
+    : "--");
 
   selectedRegionSummary.textContent = summary
     ? `Experimental TEC Model Score: mean ${summary.mean.toFixed(3)}, max ${summary.maximum.toFixed(3)}`
@@ -1319,12 +1382,15 @@ startButton.addEventListener("click", () => {
 
 const alertPage = document.querySelector(".alert-page");
 const alertGrid = document.querySelector("[data-alert-grid]");
+const alertTiles = new Map();
+let previousPageScrollTop = 0;
 
 const ALERT_THRESHOLD = 0.6;
 const CRITICAL_THRESHOLD = 0.8;
 
 function updateAlertPage() {
   if (!tecOverlayReady || !tecGrid.mapping || !countryFeatures.length) {
+    alertTiles.clear();
     alertGrid.textContent = "Waiting for regional forecast data...";
     return;
   }
@@ -1340,6 +1406,7 @@ function updateAlertPage() {
       feature.properties.NAME || "Unknown";
 
     alerts.push({
+      feature,
       name,
       code: getCountryCode(feature),
       mean: summary.mean,
@@ -1352,27 +1419,61 @@ function updateAlertPage() {
 
   alerts.sort((a, b) => b.max - a.max);
 
-  document.querySelector("[data-alert-count]").textContent =
-    alerts.length;
+  setRollingValue(document.querySelector("[data-alert-count]"), alerts.length);
 
-  document.querySelector("[data-alert-critical]").textContent =
-    alerts.filter(a => a.level === "CRITICAL").length;
+  setRollingValue(document.querySelector("[data-alert-critical]"),
+    alerts.filter(a => a.level === "CRITICAL").length);
 
-  document.querySelector("[data-alert-highest]").textContent =
-    alerts.length ? alerts[0].max.toFixed(3) : "--";
-
-  alertGrid.replaceChildren();
+  setRollingValue(document.querySelector("[data-alert-highest]"),
+    alerts.length ? alerts[0].max.toFixed(3) : "--");
 
   if (!alerts.length) {
+    alertTiles.clear();
     const empty = document.createElement("p");
     empty.textContent = "No countries exceed the selected alert threshold.";
-    alertGrid.appendChild(empty);
+    alertGrid.replaceChildren(empty);
     return;
   }
 
-  for (const alert of alerts) {
-    const tile = document.createElement("article");
-    tile.className = "alert-tile";
+  if (!alertTiles.size) alertGrid.replaceChildren();
+  const activeFeatures = new Set(alerts.map(alert => alert.feature));
+  for (const [feature, tile] of alertTiles) {
+    if (activeFeatures.has(feature)) continue;
+    tile.remove();
+    alertTiles.delete(feature);
+  }
+
+  for (const [index, alert] of alerts.entries()) {
+    let tile = alertTiles.get(alert.feature);
+    if (!tile) {
+      tile = document.createElement("article");
+      tile.className = "alert-tile";
+      tile.innerHTML = `
+        <div class="alert-tile-top">
+          <div>
+            <h3 class="alert-country-name"></h3>
+            <p class="alert-country-code"></p>
+          </div>
+          <span class="alert-level"></span>
+        </div>
+        <div class="alert-score">
+          <span class="alert-max">--</span>
+          <small>Max Model Score</small>
+        </div>
+        <div class="alert-bar">
+          <div class="alert-bar-fill"></div>
+        </div>
+        <div class="alert-tile-footer">
+          <span class="alert-mean">Mean: <span class="alert-mean-value">--</span></span>
+          <span class="alert-cells"><span class="alert-cells-value">--</span> grid cells</span>
+        </div>
+      `;
+      alertTiles.set(alert.feature, tile);
+    }
+
+    if (alertGrid.children[index] !== tile) {
+      alertGrid.insertBefore(tile, alertGrid.children[index] || null);
+    }
 
     const color = alert.level === "CRITICAL"
       ? "#ef4444" : "#f97316";
@@ -1383,49 +1484,26 @@ function updateAlertPage() {
       `${Math.min(100, Math.max(0, alert.max * 100))}%`
     );
 
-    // Text fields use textContent to avoid injecting country names as HTML.
-    tile.innerHTML = `
-      <div class="alert-tile-top">
-        <div>
-          <h3 class="alert-country-name"></h3>
-          <p class="alert-country-code"></p>
-        </div>
-        <span class="alert-level"></span>
-      </div>
-      <div class="alert-score">
-        <span class="alert-max"></span>
-        <small>Max Model Score</small>
-      </div>
-      <div class="alert-bar">
-        <div class="alert-bar-fill"></div>
-      </div>
-      <div class="alert-tile-footer">
-        <span class="alert-mean"></span>
-        <span class="alert-cells"></span>
-      </div>
-    `;
-
     tile.querySelector(".alert-country-name").textContent = alert.name;
     tile.querySelector(".alert-country-code").textContent = alert.code;
     tile.querySelector(".alert-level").textContent = alert.level;
-    tile.querySelector(".alert-max").textContent = alert.max.toFixed(3);
-    tile.querySelector(".alert-mean").textContent =
-      `Mean: ${alert.mean.toFixed(3)}`;
-    tile.querySelector(".alert-cells").textContent =
-      `${alert.count} grid cells`;
-
-    alertGrid.appendChild(tile);
+    setRollingValue(tile.querySelector(".alert-max"), alert.max.toFixed(3));
+    setRollingValue(tile.querySelector(".alert-mean-value"), alert.mean.toFixed(3));
+    setRollingValue(tile.querySelector(".alert-cells-value"), alert.count);
   }
 }
 
 function openAlertPage() {
   updateAlertPage();
   alertPage.hidden = false;
+  previousPageScrollTop = alertPage.scrollTop;
+  syncNavigationVisibility();
   setActiveNavigationView("alert");
 }
 
 function closeAlertPage() {
   alertPage.hidden = true;
+  syncNavigationVisibility();
   setActiveNavigationView(
     hero.classList.contains("is-exploring") ? "forecast" : "home"
   );
@@ -1438,13 +1516,28 @@ const aboutPage = document.querySelector("#about-page");
 
 function openAboutPage() {
   aboutPage.hidden = false;
+  previousPageScrollTop = aboutPage.scrollTop;
 
   const alertPage = document.querySelector("#alert-page");
   if (alertPage) alertPage.hidden = true;
 
+  syncNavigationVisibility();
   setActiveNavigationView("about");
 }
 
 function closeAboutPage() {
   aboutPage.hidden = true;
+  syncNavigationVisibility();
+}
+
+for (const page of [alertPage, aboutPage]) {
+  page.addEventListener("scroll", () => {
+    if (page.hidden) return;
+    const scrollTop = Math.max(0, page.scrollTop);
+    if (scrollTop <= 8) siteHeader.classList.remove("is-scroll-compact");
+    else if (scrollTop > previousPageScrollTop) siteHeader.classList.add("is-scroll-compact");
+    else if (scrollTop < previousPageScrollTop) siteHeader.classList.remove("is-scroll-compact");
+    previousPageScrollTop = scrollTop;
+    updateNavigationMode();
+  }, {passive: true});
 }
