@@ -17,7 +17,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
     <noscript><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet" /></noscript>
     <link rel="stylesheet" href="styles.css" />
-    <link rel="stylesheet" href="overview.css" />
     <script type="importmap">
       {
         "imports": {
@@ -177,28 +176,6 @@
         <span class="start-line" aria-hidden="true"></span>
       </button>
       <p class="motion-status" aria-live="polite"></p>
-      <section class="space-overview" id="space-weather-overview" aria-label="Space Weather Overview" hidden>
-        <div class="swo-header">
-          <div><span class="swo-eyebrow">STORM SIGNAL / FORECAST</span>
-            <h2>Space Weather Overview</h2>
-            <p>Geomagnetic conditions and AI-powered forecast insights.</p>
-          </div>
-          <span class="swo-status" id="swo-status" aria-live="polite">Loading Forecast…</span>
-        </div>
-        <div class="swo-stats">
-          <article class="swo-stat"><span>Predicted SYM-H</span><div class="swo-value"><strong id="swo-symh">--</strong><small>nT</small></div><span class="swo-note">60-minute prediction</span></article>
-          <article class="swo-stat"><span>Forecast Horizon</span><div class="swo-value"><strong id="swo-global-horizon">--</strong><small>min</small></div><span class="swo-note">Geomagnetic forecast</span></article>
-          <article class="swo-stat"><span>Regional TEC</span><div class="swo-value"><strong id="swo-regional-horizon">--</strong><small>hours</small></div><span class="swo-note">Disturbance model horizon</span></article>
-        </div>
-        <div class="swo-chart-panel">
-          <div class="swo-chart-header"><div><h3>SYM-H Current vs Predicted</h3><p>Single observation and 60-minute prediction</p></div>
-            <div class="swo-legend"><span><i class="swo-dot observed"></i>Observed</span><span><i class="swo-dot predicted"></i>Predicted</span></div>
-          </div>
-          <svg id="swo-chart" viewBox="0 0 640 210" role="img" aria-label="Current SYM-H and 60-minute predicted SYM-H"></svg>
-          <div class="swo-chart-footer"><span id="swo-timestamp">Observation UTC: --</span><span id="swo-mode">Historical Replay</span></div>
-          <p class="swo-disclaimer">Historical inputs, not a real-time operational forecast. TEC model scores are uncalibrated; geographic mapping is unverified.</p>
-        </div>
-      </section>
       <section class="alert-page" id="alert-page" hidden>
         <div class="alert-page-header">
           <div>
